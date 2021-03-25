@@ -1,9 +1,17 @@
 const form = document.querySelector('#form');
 const searchInput = document.querySelector('#search');
 const songsContainer = document.querySelector('#songs-container');
-const prevAndNextContainer = document.querySelector('#prev-and-next-container');
+const prevAndNextContainer = document.querySelector('#prev-and-next-container');        
 
 const apiURL = `https://api.lyrics.ovh`;
+
+const getMoreSongs = async url =>
+{
+    console.log(url)
+    const response = await fetch(`https://cors-anywhere.herokuapp.com/${url}`);
+    const data = await response.json();
+    insertsongsIntoPage(data);   
+}
 
 const insertsongsIntoPage = songsInfo => 
 {
@@ -11,15 +19,34 @@ const insertsongsIntoPage = songsInfo =>
     {
        return `<li class="song">
                     <span class="song-artist">
-                        <strong>${song.artist.name}</strong>
-                         - ${song.title}
+                        <strong>${song.artist.name}</strong> - ${song.title}
                     </span>
-
+                        
                     <button class="btn" data-artist="${song.artist.name}"
                             data-song-title="${song.title}"> Ver Letra
                     </button>
                </li>`
     }).join('')
+
+
+    if(songsInfo.prev || songsInfo.next)
+    {
+        prevAndNextContainer.innerHTML = 
+        `
+            ${ songsInfo.prev ? `<button class="btn"
+                                         onClick="getMoreSongs('${ songsInfo.prev }')">
+                                         Anteriores
+                                </button>` : '' }
+
+            ${ songsInfo.next ? `<button class="btn"
+                                         onClick="getMoreSongs('${ songsInfo.next }')">
+                                         Próximas
+                                 </button>` : '' }                                
+        `
+        return
+    }
+
+    prevAndNextContainer.innerHTML = '';
 };
 
 const fetchSongs = async term =>
@@ -42,6 +69,6 @@ form.addEventListener('submit', event =>
                                     </li>`
         return 
     }
-
+    
     fetchSongs(searchTerm)
 })
